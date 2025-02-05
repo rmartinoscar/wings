@@ -2,12 +2,12 @@ package system
 
 import (
 	"context"
-	"github.com/docker/docker/api/types/filters"
 	"net"
 	"runtime"
 
 	"github.com/acobaugh/osrelease"
 	"github.com/docker/docker/api/types"
+	"github.com/docker/docker/api/types/filters"
 	"github.com/docker/docker/api/types/system"
 	"github.com/docker/docker/client"
 	"github.com/docker/docker/pkg/parsers/kernel"
@@ -158,6 +158,10 @@ func GetSystemIps() (*IpAddresses, error) {
 	iface_addrs, err := net.InterfaceAddrs()
 	if err != nil {
 		return nil, err
+	}
+	ips, err := net.LookupHost("host.docker.internal")
+	if err == nil && len(ips) > 0 {
+		ip_addrs = append(ip_addrs, ips[0])
 	}
 	for _, addr := range iface_addrs {
 		ipNet, valid := addr.(*net.IPNet)
