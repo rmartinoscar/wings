@@ -77,7 +77,7 @@ func (fs *Filesystem) File(p string) (ufs.File, Stat, error) {
 	if err != nil {
 		return nil, Stat{}, err
 	}
-	st, err := statFromFile(f)
+	st, err := StatFromFile(f)
 	if err != nil {
 		_ = f.Close()
 		return nil, Stat{}, err

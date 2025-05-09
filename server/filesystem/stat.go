@@ -43,7 +43,7 @@ func (s *Stat) MarshalJSON() ([]byte, error) {
 	})
 }
 
-func statFromFile(f ufs.File) (Stat, error) {
+func StatFromFile(f ufs.File) (Stat, error) {
 	s, err := f.Stat()
 	if err != nil {
 		return Stat{}, err
@@ -76,7 +76,7 @@ func (fs *Filesystem) Stat(p string) (Stat, error) {
 		return Stat{}, err
 	}
 	defer f.Close()
-	st, err := statFromFile(f)
+	st, err := StatFromFile(f)
 	if err != nil {
 		return Stat{}, err
 	}

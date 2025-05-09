@@ -427,9 +427,11 @@ func postServerCompressFiles(c *gin.Context) {
 	s := ExtractServer(c)
 
 	var data struct {
-		RootPath string   `json:"root"`
-		Files    []string `json:"files"`
-		Name     string   `json:"name"`
+		RootPath    string   `json:"root"`
+		Files       []string `json:"files"`
+		Name        string   `json:"name"`
+		Format      string   `json:"format"`
+		Compression string   `json:"compression"`
 	}
 
 	if err := c.BindJSON(&data); err != nil {
@@ -450,16 +452,13 @@ func postServerCompressFiles(c *gin.Context) {
 		return
 	}
 
-	f, err := s.Filesystem().CompressFiles(data.RootPath, data.Name, data.Files)
+	fStat, err := s.Filesystem().CompressFiles(data.RootPath, data.Name, data.Format, data.Compression, data.Files)
 	if err != nil {
 		middleware.CaptureAndAbort(c, err)
 		return
 	}
 
-	c.JSON(http.StatusOK, &filesystem.Stat{
-		FileInfo: f,
-		Mimetype: "application/tar+gzip",
-	})
+	c.JSON(http.StatusOK, fStat)
 }
 
 // postServerDecompressFiles receives the HTTP request and starts the process

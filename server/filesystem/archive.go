@@ -3,6 +3,7 @@ package filesystem
 import (
 	"archive/tar"
 	"context"
+	"fmt"
 	"io"
 	"io/fs"
 	"os"
@@ -30,25 +31,25 @@ var pool = sync.Pool{
 	},
 }
 
-// TarProgress .
-type TarProgress struct {
-	*tar.Writer
+// Progress .
+type Progress struct {
+	io.Writer
 	p *progress.Progress
 }
 
-// NewTarProgress .
-func NewTarProgress(w *tar.Writer, p *progress.Progress) *TarProgress {
+// NewProgress .
+func NewProgress(w io.Writer, p *progress.Progress) *Progress {
 	if p != nil {
 		p.Writer = w
 	}
-	return &TarProgress{
+	return &Progress{
 		Writer: w,
 		p:      p,
 	}
 }
 
 // Write .
-func (p *TarProgress) Write(v []byte) (int, error) {
+func (p *Progress) Write(v []byte) (int, error) {
 	if p.p == nil {
 		return p.Writer.Write(v)
 	}
@@ -71,10 +72,14 @@ type Archive struct {
 	// unless Ignore is set.
 	Files []string
 
+	Format string
+
+	Compression string
+
 	// Progress wraps the writer of the archive to pass through the progress tracker.
 	Progress *progress.Progress
 
-	w *TarProgress
+	w *Progress
 }
 
 // Create creates an archive at dst with all the files defined in the
@@ -140,16 +145,28 @@ func (a *Archive) Stream(ctx context.Context, w io.Writer) error {
 		compressionLevel = pgzip.BestSpeed
 	}
 
-	// Create a new gzip writer around the file.
-	gw, _ := pgzip.NewWriterLevel(w, compressionLevel)
-	_ = gw.SetConcurrency(1<<20, 1)
-	defer gw.Close()
+	switch a.Format {
+	case "tar":
+		// Create a new gzip writer around the file.
+		gw, err := pgzip.NewWriterLevel(w, compressionLevel)
+		if err != nil {
+			return err
+		}
+		_ = gw.SetConcurrency(1<<20, 1)
+		defer gw.Close()
 
-	// Create a new tar writer around the gzip writer.
-	tw := tar.NewWriter(gw)
-	defer tw.Close()
+		tarWriter := tar.NewWriter(gw)
+		defer tarWriter.Close()
+		a.w = NewProgress(tarWriter, a.Progress)
 
-	a.w = NewTarProgress(tw, a.Progress)
+	/* case "zip":
+	zipWriter := zip.NewWriter(w)
+	defer zipWriter.Close()
+	a.w = NewProgress(zipWriter.last.zipw, a.Progress) */
+
+	default:
+		return fmt.Errorf("unsupported archive format: %s", a.Format)
+	}
 
 	fs := a.Filesystem.unixFS
 
