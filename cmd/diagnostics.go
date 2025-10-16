@@ -250,7 +250,7 @@ func uploadToHastebin(hbUrl, content string) (string, error) {
 		fmt.Println(string(myb))
 		return "", err
 	}
-	pres := make(map[string]interface{})
+	pres := make(map[string]any)
 	body, err := io.ReadAll(res.Body)
 	if err != nil {
 		fmt.Println("Failed to parse response.", err)

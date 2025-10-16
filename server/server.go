@@ -149,7 +149,7 @@ func (s *Server) Context() context.Context {
 
 // DetermineServerTimezone checks the envvars for a non-empty SERVER_TIMEZONE key,
 // validates if it's a valid timezone, and returns it. If not, returns the defaultTimezone.
-func DetermineServerTimezone(envvars map[string]interface{}, defaultTimezone string) string {
+func DetermineServerTimezone(envvars map[string]any, defaultTimezone string) string {
 	// Check if SERVER_TIMEZONE exists in envvars and is non-empty
 	timezone, ok := envvars["SERVER_TIMEZONE"].(string)
 	if ok && timezone != "" {
@@ -166,10 +166,9 @@ func DetermineServerTimezone(envvars map[string]interface{}, defaultTimezone str
 	return defaultTimezone
 }
 
-
 // parseInvocation parses the start command in the same way we already do in the entrypoint
 // We can use this to set the container command with all variables replaced.
-func parseInvocation(invocation string, envvars map[string]interface{}, memory int64, port int, ip string) (parsed string) {
+func parseInvocation(invocation string, envvars map[string]any, memory int64, port int, ip string) (parsed string) {
 	// Replace "{{" and "}}" with "${" and "}" respectively
 	invocation = strings.ReplaceAll(invocation, "{{", "${")
 	invocation = strings.ReplaceAll(invocation, "}}", "}")

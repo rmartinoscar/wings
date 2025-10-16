@@ -12,7 +12,7 @@ import (
 // Event represents an Event sent over a Bus.
 type Event struct {
 	Topic string
-	Data  interface{}
+	Data  any
 }
 
 // Bus represents an Event Bus.
@@ -33,7 +33,7 @@ func NewBus() *Bus {
 }
 
 // Publish publishes a message to the Bus.
-func (b *Bus) Publish(topic string, data interface{}) {
+func (b *Bus) Publish(topic string, data any) {
 	// Some of our actions for the socket support passing a more specific namespace,
 	// such as "backup completed:1234" to indicate which specific backup was completed.
 	//
@@ -63,7 +63,7 @@ func MustDecode(data []byte) (e Event) {
 }
 
 // DecodeTo decodes a byte slice of event data into the given interface.
-func DecodeTo(data []byte, v interface{}) error {
+func DecodeTo(data []byte, v any) error {
 	if err := json.Unmarshal(data, &v); err != nil {
 		return errors.Wrap(err, "events: failed to decode byte slice")
 	}

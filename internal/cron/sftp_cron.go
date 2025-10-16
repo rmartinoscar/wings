@@ -141,7 +141,7 @@ func (em *eventMap) Push(a models.Activity) {
 	if a.Timestamp.Before(m.Timestamp) {
 		m.Timestamp = a.Timestamp
 	}
-	list := m.Metadata["files"].([]interface{})
+	list := m.Metadata["files"].([]any)
 	if s, ok := a.Metadata["files"]; ok {
 		v := reflect.ValueOf(s)
 		if v.Kind() != reflect.Slice || v.IsNil() {
@@ -188,7 +188,7 @@ func (em *eventMap) forActivity(a models.Activity) *models.Activity {
 	// function and then assign it into the map with an empty metadata value.
 	v := a
 	v.Metadata = models.ActivityMeta{
-		"files": make([]interface{}, 0),
+		"files": make([]any, 0),
 	}
 	em.m[key] = &v
 	return &v

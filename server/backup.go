@@ -78,7 +78,7 @@ func (s *Server) Backup(b backup.BackupInterface) error {
 			s.Log().WithField("backup", b.Identifier()).Info("notified panel of failed backup state")
 		}
 
-		s.Events().Publish(BackupCompletedEvent+":"+b.Identifier(), map[string]interface{}{
+		s.Events().Publish(BackupCompletedEvent+":"+b.Identifier(), map[string]any{
 			"uuid":          b.Identifier(),
 			"is_successful": false,
 			"checksum":      "",
@@ -102,7 +102,7 @@ func (s *Server) Backup(b backup.BackupInterface) error {
 
 	// Emit an event over the socket so we can update the backup in realtime on
 	// the frontend for the server.
-	s.Events().Publish(BackupCompletedEvent+":"+b.Identifier(), map[string]interface{}{
+	s.Events().Publish(BackupCompletedEvent+":"+b.Identifier(), map[string]any{
 		"uuid":          b.Identifier(),
 		"is_successful": true,
 		"checksum":      ad.Checksum,

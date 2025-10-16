@@ -186,7 +186,7 @@ func (h *Handler) SendJson(v Message) error {
 // Sends JSON over the websocket connection, ignoring the authentication state of the
 // socket user. Do not call this directly unless you are positive a response should be
 // sent back to the client!
-func (h *Handler) unsafeSendJson(v interface{}) error {
+func (h *Handler) unsafeSendJson(v any) error {
 	h.Lock()
 	defer h.Unlock()
 

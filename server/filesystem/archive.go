@@ -24,7 +24,7 @@ import (
 const memory = 4 * 1024
 
 var pool = sync.Pool{
-	New: func() interface{} {
+	New: func() any {
 		b := make([]byte, memory)
 		return b
 	},

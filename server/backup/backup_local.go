@@ -69,7 +69,7 @@ func (b *LocalBackup) Remove() error {
 }
 
 // WithLogContext attaches additional context to the log output for this backup.
-func (b *LocalBackup) WithLogContext(c map[string]interface{}) {
+func (b *LocalBackup) WithLogContext(c map[string]any) {
 	b.logContext = c
 }
 

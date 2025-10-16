@@ -89,7 +89,7 @@ func (c *client) Get(ctx context.Context, path string, query q) (*Response, erro
 }
 
 // Post executes a HTTP POST request.
-func (c *client) Post(ctx context.Context, path string, data interface{}) (*Response, error) {
+func (c *client) Post(ctx context.Context, path string, data any) (*Response, error) {
 	b, err := json.Marshal(data)
 	if err != nil {
 		return nil, err
@@ -243,7 +243,7 @@ func (r *Response) Read() ([]byte, error) {
 // BindJSON binds a given interface with the data returned in the response. This
 // is a shortcut for calling Read and then manually calling json.Unmarshal on
 // the raw bytes.
-func (r *Response) BindJSON(v interface{}) error {
+func (r *Response) BindJSON(v any) error {
 	b, err := r.Read()
 	if err != nil {
 		return err

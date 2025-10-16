@@ -36,7 +36,7 @@ var configMatchRegex = regexp.MustCompile(`{{\s?config\.([\w.-]+)\s?}}`)
 var xmlValueMatchRegex = regexp.MustCompile(`^\[([\w]+)='(.*)'\]$`)
 
 // Gets the value of a key based on the value type defined.
-func (cfr *ConfigurationFileReplacement) getKeyValue(value string) interface{} {
+func (cfr *ConfigurationFileReplacement) getKeyValue(value string) any {
 	if cfr.ReplaceWith.Type() == jsonparser.Boolean {
 		v, _ := strconv.ParseBool(value)
 		return v
@@ -115,7 +115,7 @@ var checkForArrayElement = regexp.MustCompile(`^([^\[\]]+)\[([\d]+)](\..+)?$`)
 // to handle that edge case and ensure the value gets set correctly.
 //
 // Bless thee who has to touch these most unholy waters.
-func setValueAtPath(c *gabs.Container, path string, value interface{}) error {
+func setValueAtPath(c *gabs.Container, path string, value any) error {
 	var err error
 
 	matches := checkForArrayElement.FindStringSubmatch(path)
@@ -135,12 +135,12 @@ func setValueAtPath(c *gabs.Container, path string, value interface{}) error {
 			return errors.WithMessage(err, "error while parsing array element at path")
 		}
 
-		t := make([]interface{}, 1)
+		t := make([]any, 1)
 		// If the length of matches is 4 it means we're trying to access an object down in this array
 		// key, so make sure we generate the array as an array of objects, and not just a generic nil
 		// array.
 		if len(matches) == 4 {
-			t = []interface{}{map[string]interface{}{}}
+			t = []any{map[string]any{}}
 		}
 
 		// If the error is because this isn't an array or isn't found go ahead and create the array with

@@ -10,7 +10,7 @@ import (
 
 type Event string
 
-type ActivityMeta map[string]interface{}
+type ActivityMeta map[string]any
 
 // Activity defines an activity log event for a server entity performed by a user. This is
 // used for tracking commands, power actions, and SFTP events so that they can be reconciled

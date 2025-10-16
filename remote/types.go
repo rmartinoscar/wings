@@ -21,7 +21,7 @@ const (
 // benefit from being a typed struct.
 //
 // Inspired by gin.H, same concept.
-type d map[string]interface{}
+type d map[string]any
 
 // Same concept as d, but a map of strings, used for querying GET requests.
 type q map[string]string

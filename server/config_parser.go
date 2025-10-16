@@ -12,7 +12,7 @@ import (
 )
 
 // Helper function to replace variables in the file path of the configuration parser
-func replaceParserConfigPathVariables(filename string, envvars map[string]interface{}) string {
+func replaceParserConfigPathVariables(filename string, envvars map[string]any) string {
 	// Check if filename contains at least one '{' and one '}'
 	// This is here for performance as 99% of the eggs configuration parsers do not have variables in its path
 	if !strings.Contains(filename, "{") || !strings.Contains(filename, "}") {

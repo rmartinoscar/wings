@@ -42,7 +42,7 @@ func postServerBackup(c *gin.Context) {
 
 	// Attach the server ID and the request ID to the adapter log context for easier
 	// parsing in the logs.
-	adapter.WithLogContext(map[string]interface{}{
+	adapter.WithLogContext(map[string]any{
 		"server":     s.ID(),
 		"request_id": c.GetString("request_id"),
 	})

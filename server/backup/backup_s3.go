@@ -44,7 +44,7 @@ func (s *S3Backup) Remove() error {
 }
 
 // WithLogContext attaches additional context to the log output for this backup.
-func (s *S3Backup) WithLogContext(c map[string]interface{}) {
+func (s *S3Backup) WithLogContext(c map[string]any) {
 	s.logContext = c
 }
 

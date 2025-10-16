@@ -28,13 +28,13 @@ type FileAction struct {
 // Log parses a SFTP specific file activity event and then passes it off to be stored
 // in the normal activity database.
 func (eh *eventHandler) Log(e models.Event, fa FileAction) error {
-	metadata := map[string]interface{}{
+	metadata := map[string]any{
 		"files": []string{fa.Entity},
 	}
 	if fa.Target != "" {
-		metadata = map[string]interface{}{
+		metadata = map[string]any{
 			"from": fa.Entity,
-			"to": fa.Target,
+			"to":   fa.Target,
 		}
 	}
 

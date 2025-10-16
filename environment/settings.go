@@ -136,7 +136,7 @@ func (l Limits) AsContainerResources() container.Resources {
 	return resources
 }
 
-type Variables map[string]interface{}
+type Variables map[string]any
 
 // Get is an ugly hacky function to handle environment variables that get passed
 // through as not-a-string from the Panel. Ideally we'd just say only pass

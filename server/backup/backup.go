@@ -47,7 +47,7 @@ type BackupInterface interface {
 	ServerId() string
 	// WithLogContext attaches additional context to the log output for this
 	// backup.
-	WithLogContext(map[string]interface{})
+	WithLogContext(map[string]any)
 	// Generate creates a backup in whatever the configured source for the
 	// specific implementation is.
 	Generate(context.Context, *filesystem.Filesystem, string) (*ArchiveDetails, error)
@@ -85,7 +85,7 @@ type Backup struct {
 
 	client     remote.Client
 	adapter    AdapterType
-	logContext map[string]interface{}
+	logContext map[string]any
 }
 
 func (b *Backup) SetClient(c remote.Client) {
