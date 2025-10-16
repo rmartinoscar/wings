@@ -14,7 +14,7 @@ func TestRate(t *testing.T) {
 		g.It("properly rate limits a bucket", func() {
 			r := NewRate(10, time.Millisecond*100)
 
-			for i := 0; i < 100; i++ {
+			for i := range 100 {
 				ok := r.Try()
 				if i < 10 && !ok {
 					g.Failf("should not have allowed take on try %d", i)
@@ -28,7 +28,7 @@ func TestRate(t *testing.T) {
 			var out []int
 			r := NewRate(12, time.Millisecond*10)
 
-			for i := 0; i < 100; i++ {
+			for i := range 100 {
 				if i%20 == 0 {
 					// Give it time to recover.
 					time.Sleep(time.Millisecond * 10)
@@ -46,7 +46,7 @@ func TestRate(t *testing.T) {
 
 		g.It("resets back to zero when called", func() {
 			r := NewRate(10, time.Second)
-			for i := 0; i < 100; i++ {
+			for i := range 100 {
 				if i%10 == 0 {
 					r.Reset()
 				}

@@ -277,7 +277,7 @@ func (fs *Filesystem) findCopySuffix(dirfd int, name, extension string) (string,
 	var i int
 	suffix := ""
 
-	for i = 0; i < 51; i++ {
+	for i = range 51 {
 		if i == 1 {
 			suffix = " copy"
 		} else if i == 50 {

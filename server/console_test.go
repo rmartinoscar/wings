@@ -42,7 +42,7 @@ func TestName(t *testing.T) {
 		g.It("is properly reset", func() {
 			t := newConsoleThrottle(10, time.Second)
 
-			for i := 0; i < 10; i++ {
+			for range 10 {
 				g.Assert(t.Allow()).IsTrue()
 			}
 			g.Assert(t.Allow()).IsFalse()

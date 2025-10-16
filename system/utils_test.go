@@ -70,7 +70,7 @@ func Test_Utils(t *testing.T) {
 				var wg sync.WaitGroup
 
 				wg.Add(100)
-				for i := 0; i < 100; i++ {
+				for i := range 100 {
 					go func(i int) {
 						b.Store(i%2 == 0)
 						wg.Done()
@@ -121,7 +121,7 @@ func Test_Utils(t *testing.T) {
 func Benchmark_ScanReader(b *testing.B) {
 	r := rand.New(rand.NewSource(time.Now().UnixNano()))
 	var str string
-	for i := 0; i < 10; i++ {
+	for range 10 {
 		str += strings.Repeat("hello \rworld", r.Intn(2000)) + "\n"
 	}
 	reader := strings.NewReader(str)

@@ -656,13 +656,13 @@ func TestUnixFS_WalkDirat(t *testing.T) {
 	}
 	defer fs.Cleanup()
 
-	for i := 0; i < 2; i++ {
+	for i := range 2 {
 		dirName := "base" + strconv.Itoa(i)
 		if err := fs.Mkdir(dirName, 0o755); err != nil {
 			t.Error(err)
 			return
 		}
-		for j := 0; j < 1; j++ {
+		for j := range 1 {
 			f, err := fs.Create(filepath.Join(dirName, "file"+strconv.Itoa(j)))
 			if err != nil {
 				t.Error(err)

@@ -65,7 +65,7 @@ func TestSink(t *testing.T) {
 
 		g.It("removes a channel and maintains the order", func() {
 			channels := make([]chan []byte, 8)
-			for i := 0; i < len(channels); i++ {
+			for i := range channels {
 				channels[i] = make(chan []byte, 1)
 				pool.On(channels[i])
 			}
@@ -171,7 +171,7 @@ func TestSink(t *testing.T) {
 			pool.On(ch)
 			pool.On(make(chan []byte))
 
-			for i := 0; i < 100; i++ {
+			for i := range 100 {
 				pool.Push(fmt.Appendf(nil, "iteration %d", i))
 			}
 
