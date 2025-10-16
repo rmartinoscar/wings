@@ -249,7 +249,6 @@ func (m *Manager) init(ctx context.Context) error {
 	pool := workerpool.New(runtime.NumCPU())
 	log.Debugf("using %d workerpools to instantiate server instances", runtime.NumCPU())
 	for _, data := range servers {
-		data := data
 		pool.Submit(func() {
 			// Parse the json.RawMessage into an expected struct value. We do this here so that a single broken
 			// server does not cause the entire boot process to hang, and allows us to show more useful error
