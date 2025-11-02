@@ -145,6 +145,11 @@ func ensureCorrectDockerRootDirectory() {
 		log.Fatalf("Failed to remove existing %s: %v", dockerRoot, err)
 	}
 
+	newDir := filepath.Base(dockerRoot)
+	if err := os.MkdirAll(newDir, 0o700); err != nil {
+		log.Fatalf("Failed to create directory %s: %v", newDir, err)
+	}
+
 	if err := os.Symlink(defaultDockerRoot, dockerRoot); err != nil {
 		log.Fatalf("Failed to create symlink: %v", err)
 	}
