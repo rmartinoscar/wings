@@ -132,11 +132,13 @@ func ensureCorrectDockerRootDirectory() {
 	}
 
 	target, err := os.Readlink(dockerRoot)
-	if err == nil && target == defaultDockerRoot {
+	if err != nil && !os.IsNotExist(err) {
+		log.Fatal(err.Error())
+	}
+
+	if target == defaultDockerRoot {
 		log.Debugf("Symlink already correct: %s -> %s\n", defaultDockerRoot, target)
 		return
-	} else {
-		log.Fatal(err.Error())
 	}
 
 	if err := os.RemoveAll(dockerRoot); err != nil {
