@@ -68,6 +68,13 @@ var versionCommand = &cobra.Command{
 	},
 }
 
+const defaultDockerRoot = "/var/lib/docker"
+
+type DirCheck struct {
+	Name  string
+	Value *string
+}
+
 func Execute() {
 	if err := rootCommand.Execute(); err != nil {
 		log2.Fatalf("failed to execute command: %s", err)
@@ -109,15 +116,85 @@ func isDockerSnap() bool {
 	return strings.Contains(info.DockerRootDir, "/var/snap/docker")
 }
 
+func ensureCorrectDockerRootDirectory() {
+	cfg := config.Get()
+	if isDockerSnap() {
+		log.Warn("Docker Snap installation detected, adjustments might be needed.")
+		dirs := []DirCheck{
+			{"root_directory", &cfg.System.RootDirectory},
+			{"log_directory", &cfg.System.LogDirectory},
+			{"data", &cfg.System.Data},
+			{"archive_directory", &cfg.System.ArchiveDirectory},
+			{"backup_directory", &cfg.System.BackupDirectory},
+			{"tmp_directory", &cfg.System.TmpDirectory},
+			{"user.passwd_file", &cfg.System.User.PasswdFile},
+		}
+		homeDirectory := fmt.Sprintf("/home/%s", cfg.System.Username)
+		hasHomeDirectory := false
+		failed := false
+
+		for _, dir := range dirs {
+			if strings.HasPrefix(*dir.Value, "~") {
+				*dir.Value = strings.ReplaceAll(*dir.Value, "~", homeDirectory)
+				hasHomeDirectory = true
+			}
+			if !strings.Contains(*dir.Value, "/var/snap/docker") && !strings.Contains(*dir.Value, "/tmp/snap/docker") && !strings.Contains(*dir.Value, "/mnt") && !strings.Contains(*dir.Value, homeDirectory) {
+				log.Warn(fmt.Sprintf("system.%s cannot be outside of the isolated environment", dir.Name))
+				failed = true
+			}
+		}
+
+		if hasHomeDirectory {
+			config.Set(cfg)
+		}
+
+		if failed {
+			log.Fatal("Improper Docker Snap installation detected. Exiting...")
+		}
+	}
+
+	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
+	if err != nil {
+		log.Fatalf("Unable to initialize Docker client: %s", err)
+	}
+
+	defer cli.Close() // Close the client when the function returns (should not be needed, but just to be safe)
+
+	info, err := cli.Info(context.Background())
+	if err != nil {
+		log.Fatalf("Unable to get Docker info: %s", err)
+	}
+
+	dockerRoot := info.DockerRootDir
+
+	if dockerRoot == defaultDockerRoot {
+		log.Debugf("Docker root is already the default (%s). No action needed.\n", defaultDockerRoot)
+		return
+	}
+
+	target, err := os.Readlink(defaultDockerRoot)
+	if err == nil && target == dockerRoot {
+		log.Debugf("Symlink already correct: %s -> %s\n", dockerRoot, target)
+		return
+	}
+
+	if err := os.RemoveAll(defaultDockerRoot); err != nil {
+		log.Fatalf("Failed to remove existing %s: %v", defaultDockerRoot, err)
+	}
+
+	if err := os.Symlink(dockerRoot, defaultDockerRoot); err != nil {
+		log.Fatalf("Failed to create symlink: %v", err)
+	}
+
+	log.Debugf("Created symlink: %s -> %s\n", defaultDockerRoot, dockerRoot)
+}
+
 func rootCmdRun(cmd *cobra.Command, _ []string) {
 	printLogo()
 	log.Debug("running in debug mode")
 	log.WithField("config_file", configPath).Info("loading configuration from file")
 
-	if isDockerSnap() {
-		log.Error("Docker Snap installation detected. Exiting...")
-		os.Exit(1)
-	}
+	ensureCorrectDockerRootDirectory()
 
 	if ok, _ := cmd.Flags().GetBool("ignore-certificate-errors"); ok {
 		log.Warn("running with --ignore-certificate-errors: TLS certificate host chains and name will not be verified")
