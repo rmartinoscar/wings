@@ -131,21 +131,23 @@ func ensureCorrectDockerRootDirectory() {
 		return
 	}
 
-	target, err := os.Readlink(defaultDockerRoot)
-	if err == nil && target == dockerRoot {
-		log.Debugf("Symlink already correct: %s -> %s\n", dockerRoot, target)
+	target, err := os.Readlink(dockerRoot)
+	if err == nil && target == defaultDockerRoot {
+		log.Debugf("Symlink already correct: %s -> %s\n", defaultDockerRoot, target)
 		return
+	} else {
+		log.Fatal(err.Error())
 	}
 
-	if err := os.RemoveAll(defaultDockerRoot); err != nil {
-		log.Fatalf("Failed to remove existing %s: %v", defaultDockerRoot, err)
+	if err := os.RemoveAll(dockerRoot); err != nil {
+		log.Fatalf("Failed to remove existing %s: %v", dockerRoot, err)
 	}
 
-	if err := os.Symlink(dockerRoot, defaultDockerRoot); err != nil {
+	if err := os.Symlink(defaultDockerRoot, dockerRoot); err != nil {
 		log.Fatalf("Failed to create symlink: %v", err)
 	}
 
-	log.Debugf("Created symlink: %s -> %s\n", defaultDockerRoot, dockerRoot)
+	log.Debugf("Created symlink: %s -> %s\n", dockerRoot, defaultDockerRoot)
 }
 
 func rootCmdRun(cmd *cobra.Command, _ []string) {
