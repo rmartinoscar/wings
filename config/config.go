@@ -363,6 +363,11 @@ type SearchRecursion struct {
 	MaxRecursionDepth int `default:"8" yaml:"max_recursion_depth" json:"max_recursion_depth"`
 }
 
+type DirCheck struct {
+	Key   string
+	Value *string
+}
+
 // NewAtPath creates a new struct and set the path where it should be stored.
 // This function does not modify the currently stored global configuration.
 func NewAtPath(path string) (*Configuration, error) {
@@ -584,12 +589,44 @@ func FromFile(path string) error {
 //
 // This function IS NOT thread-safe.
 func ConfigureDirectories() error {
-	root := _config.System.RootDirectory
-	log.WithField("path", root).Debug("ensuring root data directory exists")
-	if err := os.MkdirAll(root, 0o700); err != nil {
-		return err
+	// There are a non-trivial number of users out there whose directories are actually a
+	// symlink to another location on the disk. If we do not resolve that final destination at this
+	// point things will appear to work, but endless errors will be encountered when we try to
+	// verify accessed paths since they will all end up resolving outside the expected directory.
+	//
+	// For the sake of automating away as much of this as possible, see if the directory is a
+	// symlink, and if so resolve to its final real path, and then update the configuration to use
+	// that.
+	dirs := []DirCheck{
+		{"root_directory", &_config.System.RootDirectory},
+		{"log_directory", &_config.System.LogDirectory},
+		{"data", &_config.System.Data},
+		{"archive_directory", &_config.System.ArchiveDirectory},
+		{"backup_directory", &_config.System.BackupDirectory},
+		{"tmp_directory", &_config.System.TmpDirectory},
 	}
 
+	for _, dir := range dirs {
+		if d, err := filepath.EvalSymlinks(*dir.Value); err != nil {
+			if !os.IsNotExist(err) {
+				return err
+			}
+		} else if d != *dir.Value {
+			dir.Value = &d
+		}
+		log.WithField("path", *dir.Value).Debugf("ensuring %s exists", dir.Key)
+		if err := os.MkdirAll(*dir.Value, 0o700); err != nil {
+			return err
+		}
+	}
+
+	if d, err := filepath.EvalSymlinks(_config.System.User.PasswdFile); err != nil {
+		if !os.IsNotExist(err) {
+			return err
+		}
+	} else if d != _config.System.User.PasswdFile {
+		_config.System.User.PasswdFile = d
+	}
 	log.WithField("filepath", _config.System.User.PasswdFile).Debug("ensuring passwd file exists")
 	if passwd, err := os.Create(_config.System.User.PasswdFile); err != nil {
 		return err
@@ -601,37 +638,6 @@ func ConfigureDirectories() error {
 			// print it out
 			fmt.Println(err)
 		}
-	}
-
-	// There are a non-trivial number of users out there whose data directories are actually a
-	// symlink to another location on the disk. If we do not resolve that final destination at this
-	// point things will appear to work, but endless errors will be encountered when we try to
-	// verify accessed paths since they will all end up resolving outside the expected data directory.
-	//
-	// For the sake of automating away as much of this as possible, see if the data directory is a
-	// symlink, and if so resolve to its final real path, and then update the configuration to use
-	// that.
-	if d, err := filepath.EvalSymlinks(_config.System.Data); err != nil {
-		if !os.IsNotExist(err) {
-			return err
-		}
-	} else if d != _config.System.Data {
-		_config.System.Data = d
-	}
-
-	log.WithField("path", _config.System.Data).Debug("ensuring server data directory exists")
-	if err := os.MkdirAll(_config.System.Data, 0o700); err != nil {
-		return err
-	}
-
-	log.WithField("path", _config.System.ArchiveDirectory).Debug("ensuring archive data directory exists")
-	if err := os.MkdirAll(_config.System.ArchiveDirectory, 0o700); err != nil {
-		return err
-	}
-
-	log.WithField("path", _config.System.BackupDirectory).Debug("ensuring backup data directory exists")
-	if err := os.MkdirAll(_config.System.BackupDirectory, 0o700); err != nil {
-		return err
 	}
 
 	return nil
