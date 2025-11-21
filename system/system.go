@@ -58,10 +58,12 @@ type DockerRunc struct {
 }
 
 type System struct {
+	AppName       string `json:"app_name"`
 	Architecture  string `json:"architecture"`
-	CPUThreads    int    `json:"cpu_threads"`
+	CPUCount      int    `json:"cpu_count"`
 	MemoryBytes   int64  `json:"memory_bytes"`
 	KernelVersion string `json:"kernel_version"`
+	Version       string `json:"version"`
 	OS            string `json:"os"`
 	OSType        string `json:"os_type"`
 }
@@ -100,7 +102,7 @@ type DockerDiskUsage struct {
 	BuildCacheSize int64 `json:"build_cache_size"`
 }
 
-func GetSystemInformation() (*Information, error) {
+func GetSystemInformation(appName string) (*Information, error) {
 	k, err := kernel.GetKernelVersion()
 	if err != nil {
 		return nil, err
@@ -157,10 +159,12 @@ func GetSystemInformation() (*Information, error) {
 			},
 		},
 		System: System{
+			AppName:       appName,
 			Architecture:  runtime.GOARCH,
-			CPUThreads:    runtime.NumCPU(),
+			CPUCount:      runtime.NumCPU(),
 			MemoryBytes:   info.MemTotal,
 			KernelVersion: k.String(),
+			Version:       Version,
 			OS:            os,
 			OSType:        runtime.GOOS,
 		},

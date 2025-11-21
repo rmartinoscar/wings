@@ -21,7 +21,7 @@ import (
 
 // Returns information about the system that wings is running on.
 func getSystemInformation(c *gin.Context) {
-	i, err := system.GetSystemInformation()
+	i, err := system.GetSystemInformation(config.Get().AppName)
 	if err != nil {
 		middleware.CaptureAndAbort(c, err)
 		return
@@ -32,19 +32,7 @@ func getSystemInformation(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, struct {
-		Architecture  string `json:"architecture"`
-		CPUCount      int    `json:"cpu_count"`
-		KernelVersion string `json:"kernel_version"`
-		OS            string `json:"os"`
-		Version       string `json:"version"`
-	}{
-		Architecture:  i.System.Architecture,
-		CPUCount:      i.System.CPUThreads,
-		KernelVersion: i.System.KernelVersion,
-		OS:            i.System.OSType,
-		Version:       i.Version,
-	})
+	c.JSON(http.StatusOK, i.System)
 }
 func getDiagnostics(c *gin.Context) {
 	// Optional query params: ?include_endpoints=true&include_logs=true&log_lines=300
